@@ -65,16 +65,23 @@ module ID(
 	assign D_imm16 = D_instruc[`Imm16];
 	assign D_imm26 = D_instruc[`Imm26];
 	assign D_RD1 = RD1;
-	assign RD1 = (PassSrcRD1 == 1) ? D_M_Pass : GRF_RD1;
-	assign RD2 = (PassSrcRD2 == 1) ? D_M_Pass : GRF_RD2;
+	assign RD1 = (PassSrcRD1 == 1) ? D_M_Pass : (D_WRA == D_rs && D_rs != 0) ? D_WRD : GRF_RD1;
+	assign RD2 = (PassSrcRD2 == 1) ? D_M_Pass : (D_WRA == D_rt && D_rt != 0) ? D_WRD : GRF_RD2;
 	assign branchJump = cmpTrue && isBranch;
 	assign D_rs = D_instruc[`rs];
 	assign D_rt = D_instruc[`rt];
 	
-	always @(negedge clk) begin	//store data when negedge
+	/*always @(negedge clk) begin	//store data when negedge
 		if(D_WRA != 0) begin
 				GRF[D_WRA] <= D_WRD;
 				$display("%d@%h: $%d <= %h", $time, D_PCWhenWrite, D_WRA, D_WRD);
+		end
+	end*/
+	always @(posedge clk) begin
+		//	Write GRF
+		if(D_WRA != 0) begin
+			GRF[D_WRA] <= D_WRD;
+			$display("%d@%h: $%d <= %h", $time, D_PCWhenWrite, D_WRA, D_WRD);
 		end
 	end
 	
